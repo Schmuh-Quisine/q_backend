@@ -1,10 +1,8 @@
 package org.schmuh.quisine.controller;
 
-import org.schmuh.quisine.dto.Recipe;
+import org.schmuh.quisine.entity.Recipe;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.IllegalFormatPrecisionException;
 
 @RestController
 @RequestMapping("/api/v1/")
