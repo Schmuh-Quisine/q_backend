@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 @NoArgsConstructor
 @Entity
 @Table(name="Ingredient")
@@ -11,15 +13,12 @@ public class Ingredient {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public int id;
+    public Long id;
     @Column
     public String name;
     @Column
-    public int amount;
-    @Column
     public boolean vegetarian;
-//
-//
-//    @ManyToMany(mappedBy = "recipe")
-//    private Recipe recipes;
+    @OneToMany(mappedBy = "ingredient", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<RecipeIngredient> recipeIngredients;
+
 }
