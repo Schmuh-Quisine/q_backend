@@ -14,6 +14,8 @@ public class OCRService {
     private String ocrPath;
 
     public String GetTextFromPicture(){
-        Tesseract tesseract
+        Tesseract tesseract = new Tesseract();
+        tesseract.setDatapath(ocrPath);
+        return "";
     }
 }
