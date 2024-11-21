@@ -1,6 +1,7 @@
 package org.schmuh.quisine.controller;
 
 import org.json.JSONObject;
+import org.schmuh.quisine.dto.RecipeDto;
 import org.schmuh.quisine.entity.Recipe;
 import org.schmuh.quisine.entity.Tag;
 import org.schmuh.quisine.services.IngredientService;
@@ -8,10 +9,12 @@ import org.schmuh.quisine.services.OCRService;
 import org.schmuh.quisine.services.RecipeService;
 import org.schmuh.quisine.services.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,27 +30,17 @@ public class RecipeController {
     IngredientService ingredientService;
 
     @PostMapping("recipe")
-    public ResponseEntity<Void> postRecipe(@RequestBody JSONObject recipeJson) {
+    public ResponseEntity<Recipe> postRecipe(@RequestBody RecipeDto recipeDto) {
 
-        // retrieve native Recipe Information from json object
-        Recipe tmpRecipe = new Recipe();
-        tmpRecipe.setTitle(recipeJson.getString("Title"));
-        tmpRecipe.setDescription(recipeJson.getString("Description"));
-        tmpRecipe.setPersonAmount(recipeJson.getInt("PersonAmount"));
-        tmpRecipe.setInstructions(recipeJson.getString("Instructions"));
-        tmpRecipe.setImageSrc(recipeJson.getString("ImageSrc"));
-
-        this.ingredientService.saveFromJson(recipeJson.getJSONArray("Ingredients"));
-        // TODO Check if this is really the correct way, maybe there is an automated way in OCR.
-        // TODO to the same if not possible for recipeIngredients
-        return ResponseEntity.ok().build();
+        Recipe savedRecipe = recipeService.saveRecipe(recipeDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedRecipe);
     }
 
     @GetMapping("recipe/{id}")
-    public ResponseEntity<Recipe> getRecipe(@PathVariable("id") long id) {
+    public ResponseEntity<RecipeDto> getRecipe(@PathVariable("id") long id) {
 
-        Recipe tmpRecipe = this.recipeService.getRecipeById(id);
-        return ResponseEntity.ok().body(tmpRecipe);
+        RecipeDto tmpRecipeDto = this.recipeService.getRecipeById(id);
+        return ResponseEntity.ok().body(tmpRecipeDto);
     }
 
     @PutMapping("recipe/{id}")
@@ -57,10 +50,14 @@ public class RecipeController {
     }
 
     @GetMapping("recipe/all")
-    public ResponseEntity<List<Recipe>> getAllRecipe() {
+    public ResponseEntity<List<RecipeDto>> getAllRecipe() {
 
         List<Recipe> recipesList = this.recipeService.findAll();
-        return ResponseEntity.ok().body(recipesList);
+        List<RecipeDto> recipeDtoList = new ArrayList<>();
+        for (Recipe recipe : recipesList) {
+            recipeDtoList.add(this.recipeService.mapToDto(recipe));
+        }
+        return ResponseEntity.ok().body(recipeDtoList);
     }
 
     @GetMapping("tags/all")
