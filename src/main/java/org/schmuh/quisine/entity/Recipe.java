@@ -19,16 +19,16 @@ import java.util.Set;
 public class Recipe {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long id;
-    public String title;
-    public String description;
-    public String instructions;
-    public String image;
-//    @ManyToMany()
-//    private Set<Tag> tags;
+    private Long id;
+    private String title;
+    private String description;
+    @ManyToMany()
+    private Set<Tag> tags;
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<RecipeIngredient> recipeIngredients;
-    public int personAmount;
-    public int timeEffort;
+    private Set<RecipeIngredient> ingredients;
+    private int personAmount;
+    private int timeEffort;
+    private String instructions;
+    private String imageSrc;
 
 }

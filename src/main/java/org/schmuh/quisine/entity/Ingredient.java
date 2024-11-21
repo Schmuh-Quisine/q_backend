@@ -2,13 +2,16 @@ package org.schmuh.quisine.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Set;
-
+@Setter
+@Getter
 @NoArgsConstructor
 @Entity
-@Table(name="Ingredient")
+@Table(name="Ingredient", uniqueConstraints = @UniqueConstraint(columnNames = "name"))
 public class Ingredient {
 
     @Id
@@ -17,7 +20,6 @@ public class Ingredient {
     @Column
     public String name;
     @Column
-    public boolean vegetarian;
     @OneToMany(mappedBy = "ingredient", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<RecipeIngredient> recipeIngredients;
 

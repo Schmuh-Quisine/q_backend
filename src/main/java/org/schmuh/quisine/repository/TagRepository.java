@@ -1,9 +1,12 @@
 package org.schmuh.quisine.repository;
 
-import org.schmuh.quisine.entity.Ingredient;
 import org.schmuh.quisine.entity.Recipe;
+import org.schmuh.quisine.entity.Tag;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
+import java.util.Optional;
+
+public interface TagRepository extends JpaRepository<Tag, Long> {
+
 
 }
