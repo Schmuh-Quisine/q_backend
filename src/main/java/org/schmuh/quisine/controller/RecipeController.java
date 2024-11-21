@@ -1,6 +1,7 @@
 package org.schmuh.quisine.controller;
 
 import org.schmuh.quisine.entity.Recipe;
+import org.schmuh.quisine.services.OCRService;
 import org.schmuh.quisine.services.RecipeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +44,7 @@ public class RecipeController {
         List<Recipe> recipesList = this.recipeService.findAll();
         return ResponseEntity.ok().body(recipesList);
     }
+
     @PostMapping("/upload")
     public ResponseEntity<String> uploadImage(@RequestParam("image") MultipartFile file) {
         try {
@@ -69,4 +71,6 @@ public class RecipeController {
             return ResponseEntity.status(500).body("An error occurred while uploading the image");
         }
     }
+
+
 }
