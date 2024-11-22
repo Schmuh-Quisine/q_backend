@@ -1,5 +1,6 @@
 package org.schmuh.quisine.controller;
 
+import net.sourceforge.tess4j.TesseractException;
 import org.schmuh.quisine.services.OCRService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,11 @@ public class OCRController {
     @PostMapping("ocrTest")
     public ResponseEntity<String> ocrTest() {
 
+        try{
         this.ocrService.GetTextFromPicture();
+        } catch (TesseractException e) {
+            throw new RuntimeException(e);
+        }
         return ResponseEntity.ok().body("Sieht supi aus diggi");
     }
 
