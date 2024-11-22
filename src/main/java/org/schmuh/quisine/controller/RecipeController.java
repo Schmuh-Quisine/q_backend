@@ -1,11 +1,9 @@
 package org.schmuh.quisine.controller;
 
-import org.json.JSONObject;
 import org.schmuh.quisine.dto.RecipeDto;
 import org.schmuh.quisine.entity.Recipe;
 import org.schmuh.quisine.entity.Tag;
 import org.schmuh.quisine.services.IngredientService;
-import org.schmuh.quisine.services.OCRService;
 import org.schmuh.quisine.services.RecipeService;
 import org.schmuh.quisine.services.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,32 +22,32 @@ public class RecipeController {
 
     @Autowired
     RecipeService recipeService;
-    @Autowired
-    TagService tagService;
-    @Autowired
-    IngredientService ingredientService;
 
-    @PostMapping("recipe")
-    public ResponseEntity<Recipe> postRecipe(@RequestBody RecipeDto recipeDto) {
 
-        Recipe savedRecipe = recipeService.saveRecipe(recipeDto);
+    @PostMapping("recipes")
+    public ResponseEntity<RecipeDto> postRecipe(@RequestBody RecipeDto recipeDto) {
+
+        RecipeDto savedRecipe = recipeService.createRecipe(recipeDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedRecipe);
     }
 
-    @GetMapping("recipe/{id}")
+    @GetMapping("recipes/{id}")
     public ResponseEntity<RecipeDto> getRecipe(@PathVariable("id") long id) {
 
         RecipeDto tmpRecipeDto = this.recipeService.getRecipeById(id);
         return ResponseEntity.ok().body(tmpRecipeDto);
     }
 
-    @PutMapping("recipe/{id}")
-    public ResponseEntity<String> putRecipe(@PathVariable("id") long id, @RequestBody Recipe recipe) {
-        this.recipeService.updateRecipeById(id, recipe);
-        return ResponseEntity.ok().body("Recipe Saved");
+    @PutMapping("recipes/{id}")
+    public ResponseEntity<RecipeDto> putRecipe(@PathVariable("id") long id, @RequestBody RecipeDto recipeDto) {
+        RecipeDto recipeDtoUpdated = this.recipeService.updateRecipeById(recipeDto);
+        if (recipeDtoUpdated == null){
+                return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().body(recipeDtoUpdated);
     }
 
-    @GetMapping("recipe/all")
+    @GetMapping("recipes")
     public ResponseEntity<List<RecipeDto>> getAllRecipe() {
 
         List<Recipe> recipesList = this.recipeService.findAll();
@@ -60,19 +58,11 @@ public class RecipeController {
         return ResponseEntity.ok().body(recipeDtoList);
     }
 
-    @GetMapping("tags/all")
-    public ResponseEntity<List<Tag>> getAllTag() {
-
-        List<Tag> tagList = this.tagService.findAll();
-        return ResponseEntity.ok().body(tagList);
+    @DeleteMapping("recipes/{id}")
+    public ResponseEntity<String> deleteRecipe(@PathVariable("id") long id) {
+        this.recipeService.deleteRecipe(id);
+        return ResponseEntity.ok().body("Recipe Deleted");
     }
-
-    @PostMapping("tag")
-    public ResponseEntity<Void> postRecipe(@RequestBody Tag tag) {
-        this.tagService.save(tag);
-        return ResponseEntity.ok().build();
-    }
-
     @PostMapping("/upload")
     public ResponseEntity<String> uploadImage(@RequestParam("image") MultipartFile file) {
         try {

@@ -11,6 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 public class RecipeDto {
+    private long Id;
     private String Title;
     private String Description;
     private List<IngredientDto> Ingredients;

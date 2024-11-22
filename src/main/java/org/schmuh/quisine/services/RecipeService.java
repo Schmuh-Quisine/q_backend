@@ -1,7 +1,6 @@
 package org.schmuh.quisine.services;
 
 import lombok.NoArgsConstructor;
-import org.json.JSONObject;
 import org.schmuh.quisine.dto.IngredientDto;
 import org.schmuh.quisine.dto.RecipeDto;
 import org.schmuh.quisine.entity.Ingredient;
@@ -37,18 +36,13 @@ public class RecipeService {
        return this.mapToDto(Objects.requireNonNull(recipeRepository.findById(id).orElse(null)));
     }
 
-    public void saveRecipe(Recipe recipe) {
+    public void createRecipe(Recipe recipe) {
         this.recipeRepository.save(recipe);
 
     }
 
-    public void updateRecipeById(Long id, Recipe recipe) {
-
-        // TODO finish update functionality of recipe
-        Recipe tmpRecipe = this.recipeRepository.findById(id).orElse(null);
-        tmpRecipe.setDescription(recipe.getDescription());
-        this.saveRecipe(tmpRecipe);
-
+    public void deleteRecipe(Long id) {
+        this.recipeRepository.deleteById(id);
     }
 
     public List<Recipe> findAll() {
@@ -56,9 +50,16 @@ public class RecipeService {
         return this.recipeRepository.findAll();
     }
 
-    public Recipe saveRecipe(RecipeDto recipeDto) {
+    public RecipeDto createRecipe(RecipeDto recipeDto) {
         // Map Recipe
         Recipe recipe = new Recipe();
+        recipe = this.saveRecipeMiddleware(recipe, recipeDto);
+
+        // Save Recipe
+        return mapToDto(recipeRepository.save(recipe));
+    }
+
+    public Recipe saveRecipeMiddleware(Recipe recipe, RecipeDto recipeDto) {
         recipe.setTitle(recipeDto.getTitle());
         recipe.setDescription(recipeDto.getDescription());
         recipe.setPersonAmount(recipeDto.getPersonAmount());
@@ -95,11 +96,19 @@ public class RecipeService {
                     return recipeIngredient;
                 }).collect(Collectors.toSet());
         recipe.setIngredients(recipeIngredients);
-
-        // Save Recipe
-        return recipeRepository.save(recipe);
+        return recipe;
     }
 
+    public RecipeDto updateRecipeById(RecipeDto recipeDto) {
+        Recipe recipe = this.recipeRepository.findById(recipeDto.getId()).orElse(null);
+        if(recipe == null) {
+            return null;
+        }
+        recipe = this.saveRecipeMiddleware(recipe, recipeDto);
+
+        return this.mapToDto(recipe);
+
+    }
     public RecipeDto mapToDto(Recipe recipe) {
         RecipeDto dto = new RecipeDto();
         dto.setTitle(recipe.getTitle());
