@@ -100,7 +100,7 @@ public class RecipeService {
     }
 
     public RecipeDto updateRecipeById(RecipeDto recipeDto) {
-        Recipe recipe = this.recipeRepository.findById(recipeDto.getId()).orElse(null);
+        Recipe recipe = this.recipeRepository.findById((long)recipeDto.getId()).orElse(null);
         if(recipe == null) {
             return null;
         }

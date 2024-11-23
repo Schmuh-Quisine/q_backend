@@ -1,9 +1,7 @@
 package org.schmuh.quisine.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
 import java.util.List;
 @NoArgsConstructor
@@ -11,15 +9,24 @@ import java.util.List;
 @Getter
 @Setter
 public class RecipeDto {
-    private long Id;
-    private String Title;
-    private String Description;
-    private List<IngredientDto> Ingredients;
-    private int PersonAmount;
-    private int TimeEffort;
-    private List<String> Tags;
-    private String Instructions;
-    private String ImgSrc; // Optional field for recipe images
+    @JsonProperty("Id")
+    private int id;
+    @JsonProperty("Title")
+    private String title;
+    @JsonProperty("Description")
+    private String description;
+    @JsonProperty("Ingredients")
+    private List<IngredientDto> ingredients;
+    @JsonProperty("PersonAmount")
+    private int personAmount;
+    @JsonProperty("TimeEffort")
+    private int timeEffort;
+    @JsonProperty("Tags")
+    private List<String> tags;
+    @JsonProperty("Instructions")
+    private String instructions;
+    @JsonProperty("ImgSrc")
+    private String imgSrc; // Optional field for recipe images
 
     // Getters and Setters
 }
