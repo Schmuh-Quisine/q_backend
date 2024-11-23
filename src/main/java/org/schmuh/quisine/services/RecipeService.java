@@ -52,6 +52,10 @@ public class RecipeService {
 
     public RecipeDto createRecipe(RecipeDto recipeDto) {
         // Map Recipe
+
+        if (this.recipeRepository.findById((long)recipeDto.getId()).isPresent()) {
+            return null;
+        }
         Recipe recipe = new Recipe();
         recipe = this.saveRecipeMiddleware(recipe, recipeDto);
 

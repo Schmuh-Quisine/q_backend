@@ -28,7 +28,10 @@ public class RecipeController {
     public ResponseEntity<RecipeDto> postRecipe(@RequestBody RecipeDto recipeDto) {
 
         RecipeDto savedRecipe = recipeService.createRecipe(recipeDto);
+        if (savedRecipe != null) {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedRecipe);
+        }
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
     }
 
     @GetMapping("recipes/{id}")
