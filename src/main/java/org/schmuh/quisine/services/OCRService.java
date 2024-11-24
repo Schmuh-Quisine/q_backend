@@ -10,10 +10,8 @@ import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.springframework.stereotype.Service;
 
-import java.util.Dictionary;
-import java.util.Hashtable;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 
 
 @Service
@@ -33,33 +31,27 @@ public class OCRService {
         tesseract = new Tesseract();
         tesseract.setDatapath(ocrPath);
         tesseract.setLanguage("deu");
+        //tesseract.setTessVariable("tessedit_char_whitelist", "");
     }
 
     public void GetTextFromPicture() throws TesseractException {
-        var file = this.imageService.GetImage("rezept1.jpg");
+        var file = this.imageService.GetImage("rezept4.jpg");
         var teststring = tesseract.doOCR(file);
+
+        //temp
+        try{
+        var printwriter = new PrintWriter(file.getParent() + "/OCRText.txt");
+        printwriter.println(teststring);
+        printwriter.close();
+        }
+        catch (FileNotFoundException e){
+            e.printStackTrace();
+        }
+        //temp
 
         System.out.println("-------------------Rezept anfang---------------------------");
         System.out.println(teststring);
         System.out.println("-------------------Rezept ende---------------------------");
 
-        // var test = getIngredients(teststring)
-    }
-
-    private Dictionary<String, String> getIngredients(String ocrText){
-        Pattern pattern = Pattern.compile("(\\d+\\s?(g|ml|TL|EL|Prise)?)?\\s?([\\w\\s]+)");
-        Matcher matcher = pattern.matcher(ocrText);
-
-        Dictionary<String, String> ingredients = new Hashtable<>();
-
-        while(matcher.find()){
-            String amount = matcher.group(1) != null ? matcher.group(1) : "";
-            String ingredient = matcher.group(3);
-            ingredients.put(ingredient, amount);
-        }
-        System.out.println("-------------------Ingredients anfang---------------------------");
-        System.out.println(ingredients);
-        System.out.println("-------------------Ingredients ende---------------------------");
-        return ingredients;
     }
 }
