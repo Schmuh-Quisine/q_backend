@@ -5,12 +5,13 @@ import lombok.NoArgsConstructor;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.CLAHE;
+import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.photo.Photo;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-
+import java.util.ArrayList;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -39,25 +40,44 @@ public class ImageService {
 
         Mat image = Imgcodecs.imread(testFolder + imageName);
 
-        Mat grayImage = new Mat();
-        Imgproc.cvtColor(image, grayImage, Imgproc.COLOR_BGR2GRAY);
-        // writeImage(grayImage, "grayImage.jpg");
+        Imgproc.cvtColor(image, image, Imgproc.COLOR_BGR2GRAY);
 
         CLAHE clahe = Imgproc.createCLAHE();
         clahe.setClipLimit(3.5);
         clahe.setTilesGridSize(new Size(8,8));
-        clahe.apply(grayImage, grayImage);
-        // writeImage(grayImage, "claheImage.jpg");
+        clahe.apply(image, image);
 
-        Core.normalize(grayImage, grayImage, 0, 255, Core.NORM_MINMAX);
-        // writeImage(grayImage, "normalizeImage.jpg");
+        Core.normalize(image, image, 0, 255, Core.NORM_MINMAX);
 
-        Photo.fastNlMeansDenoising(grayImage, grayImage, 20);
-        // writeImage(grayImage, "NLImage.jpg");
+        Photo.fastNlMeansDenoising(image, image, 20);
 
-        Imgproc.adaptiveThreshold(grayImage, grayImage, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 11, 2);
-        writeImage(grayImage, "aThresholdImage.jpg");
+        Mat thresh = new Mat();
+        Imgproc.adaptiveThreshold(image, thresh, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY_INV, 15, 10);
+        writeImage(thresh, "aThresholdImage.jpg");
 
+        Mat dilte = thresh.clone();
+        var kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(20,3));
+        Imgproc.dilate(thresh, dilte, kernel, new Point(-1,-1), 2);
+        writeImage(dilte, "dilateImage.jpg");
+
+        ArrayList<MatOfPoint> contours = new ArrayList<>();
+        Mat hierarchy = new Mat();
+        Imgproc.findContours(dilte, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        System.out.println(contours.size());
+
+        Mat rectangles = new Mat();
+        rectangles = image.clone();
+        for (MatOfPoint contour : contours) {
+            Rect rect = Imgproc.boundingRect(contour);
+            Imgproc.rectangle(rectangles, rect.tl(), rect.br(), new Scalar(0, 255, 0), 2);
+            double area = Imgproc.contourArea(contour);
+            if (rect.width > rect.height * 5 || rect.height > rect.width * 2 ||area < 500){
+                continue;
+            }
+            Imgproc.drawContours(thresh, contours, contours.indexOf(contour), new Scalar(255, 255, 255), -1);
+        }
+        writeImage(rectangles, "rectanglesImage.jpg");
+        writeImage(thresh, "contours.jpg");
     }
 
     private void writeImage(Mat image, String imageName)

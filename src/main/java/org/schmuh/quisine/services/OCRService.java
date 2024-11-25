@@ -35,7 +35,7 @@ public class OCRService {
     }
 
     public void GetTextFromPicture() throws TesseractException {
-        var file = this.imageService.GetImage("rezept4.jpg");
+        var file = this.imageService.GetImage("rezept1.jpg");
         var teststring = tesseract.doOCR(file);
 
         //temp
