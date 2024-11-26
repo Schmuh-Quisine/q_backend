@@ -50,14 +50,21 @@ public class ImageService {
         Core.normalize(image, image, 0, 255, Core.NORM_MINMAX);
 
         Photo.fastNlMeansDenoising(image, image, 20);
+        writeImage(image, "preProcessedImage.jpg");
 
         Mat thresh = new Mat();
         Imgproc.adaptiveThreshold(image, thresh, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY_INV, 15, 10);
         writeImage(thresh, "aThresholdImage.jpg");
 
-        Mat dilte = thresh.clone();
+        var contours = GetRowContours(thresh);
+        DrawRectContours(image, contours);
+        writeImage(thresh, "contours.jpg");
+    }
+
+    private ArrayList<MatOfPoint> GetRowContours(Mat image){
+        Mat dilte = image.clone();
         var kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(20,3));
-        Imgproc.dilate(thresh, dilte, kernel, new Point(-1,-1), 2);
+        Imgproc.dilate(image, dilte, kernel, new Point(-1,-1), 2);
         writeImage(dilte, "dilateImage.jpg");
 
         ArrayList<MatOfPoint> contours = new ArrayList<>();
@@ -74,10 +81,21 @@ public class ImageService {
             if (rect.width > rect.height * 5 || rect.height > rect.width * 2 ||area < 500){
                 continue;
             }
-            Imgproc.drawContours(thresh, contours, contours.indexOf(contour), new Scalar(255, 255, 255), -1);
+            Imgproc.drawContours(image, contours, contours.indexOf(contour), new Scalar(0, 0, 0), -2);
         }
         writeImage(rectangles, "rectanglesImage.jpg");
-        writeImage(thresh, "contours.jpg");
+        return contours;
+    }
+
+    private void DrawRectContours(Mat image, ArrayList<MatOfPoint> contours){
+        Mat rectangles = new Mat();
+        rectangles = image.clone();
+        for (MatOfPoint contour : contours) {
+            Rect rect = Imgproc.boundingRect(contour);
+            Imgproc.rectangle(rectangles, rect.tl(), rect.br(), new Scalar(0, 255, 0), 2);
+            double area = Imgproc.contourArea(contour);
+        }
+        writeImage(rectangles, "rectanglesImage.jpg");
     }
 
     private void writeImage(Mat image, String imageName)
