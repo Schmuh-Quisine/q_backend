@@ -18,7 +18,7 @@ import java.util.Set;
 @Table(name="Recipe", uniqueConstraints = @UniqueConstraint(columnNames = "id"))
 public class Recipe {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title;
     private String description;

@@ -60,7 +60,8 @@ public class RecipeService {
         recipe = this.saveRecipeMiddleware(recipe, recipeDto);
 
         // Save Recipe
-        return mapToDto(recipeRepository.save(recipe));
+        Recipe tmpRecipe = this.recipeRepository.save(recipe);
+        return mapToDto(tmpRecipe);
     }
 
     public Recipe saveRecipeMiddleware(Recipe recipe, RecipeDto recipeDto) {
@@ -115,6 +116,7 @@ public class RecipeService {
     }
     public RecipeDto mapToDto(Recipe recipe) {
         RecipeDto dto = new RecipeDto();
+        dto.setId(recipe.getId());
         dto.setTitle(recipe.getTitle());
         dto.setDescription(recipe.getDescription());
         dto.setPersonAmount(recipe.getPersonAmount());

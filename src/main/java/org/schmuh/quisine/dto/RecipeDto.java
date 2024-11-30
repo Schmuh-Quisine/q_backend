@@ -10,7 +10,7 @@ import java.util.List;
 @Setter
 public class RecipeDto {
     @JsonProperty("Id")
-    private int id;
+    private long id;
     @JsonProperty("Title")
     private String title;
     @JsonProperty("Description")

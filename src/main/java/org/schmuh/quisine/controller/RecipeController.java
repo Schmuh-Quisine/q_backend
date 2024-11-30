@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@CrossOrigin(origins = "http://localhost:8081")
 @RestController
 @RequestMapping("/api/v1/")
 public class RecipeController {
@@ -66,8 +67,9 @@ public class RecipeController {
         this.recipeService.deleteRecipe(id);
         return ResponseEntity.ok().body("Recipe Deleted");
     }
+    @CrossOrigin(origins = "http://localhost:8081")
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadImage(@RequestParam("image") MultipartFile file) {
+    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
             // Validate the file
             if (file.isEmpty()) {
