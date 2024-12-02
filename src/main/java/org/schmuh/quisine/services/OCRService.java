@@ -10,6 +10,7 @@ import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.springframework.stereotype.Service;
 
+import java.awt.*;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
@@ -31,16 +32,25 @@ public class OCRService {
         tesseract = new Tesseract();
         tesseract.setDatapath(ocrPath);
         tesseract.setLanguage("deu");
+        tesseract.setTessVariable("user_defined_dpi", "300");
         //tesseract.setTessVariable("tessedit_char_whitelist", "");
     }
 
     public void GetTextFromPicture() throws TesseractException {
         var file = this.imageService.GetImage("rezept4.jpg");
-        var teststring = tesseract.doOCR(file);
+        var teststring = new String();
 
+        for (Rectangle rect : file.getSecond()){
+            teststring += tesseract.doOCR(file.getFirst(), rect);
+        }
         //temp
+
+        System.out.println("-------------------Ganzes bild Rezept anfang---------------------------");
+        System.out.println(tesseract.doOCR(file.getFirst()));
+        System.out.println("-------------------Rezept ende---------------------------");
+
         try{
-        var printwriter = new PrintWriter(file.getParent() + "/OCRText.txt");
+        var printwriter = new PrintWriter(this.imageService.folderPath + "/OCRText.txt");
         printwriter.println(teststring);
         printwriter.close();
         }
