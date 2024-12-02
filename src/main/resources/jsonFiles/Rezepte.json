@@ -1,0 +1,40 @@
+[
+    {
+        "Id": 1,
+        "Title": "Spaghetti Bolognese",
+        "Description": "Klassisches italienisches Pasta-Gericht mit würziger Fleischsauce",
+        "Ingredients": [
+            { "Name": "Spaghetti", "Amount": 200, "Unit": "grams" },
+            { "Name": "Hackfleisch", "Amount": 300, "Unit": "grams" },
+            { "Name": "Tomatensauce", "Amount": 400, "Unit": "ml" },
+            { "Name": "Zwiebeln", "Amount": 1, "Unit": "piece" },
+            { "Name": "Knoblauch", "Amount": 2, "Unit": "cloves" },
+            { "Name": "Olivenöl", "Amount": 2, "Unit": "EL" },
+            { "Name": "Kräuter", "Amount": 1, "Unit": "TL" }
+        ],
+        "PersonAmount": 4,
+        "TimeEffort": 40,
+        "Tags": "Meatlover, Italian, Comfort Food",
+        "Instructions": "MockedInstruction",
+        "ImgSrc": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fstatic.fanpage.it%2Fwp-content%2Fuploads%2Fsites%2F22%2F2021%2F06%2Fspaghetti-bolognese.jpg&f=1&nofb=1&ipt=5367435620529d1a52be9d33411e9984eb80f9e76544437cb1be006906dd6d74&ipo=images"
+    },
+    {
+
+        "Title": "Griechischer Salat",
+        "Description": "Frischer Salat mit Feta, Gurke und Oliven",
+        "Ingredients": [
+            { "Name": "Gurke", "Amount": 1, "Unit": "piece" },
+            { "Name": "Tomaten", "Amount": 3, "Unit": "pieces" },
+            { "Name": "rote Zwiebel", "Amount": 1, "Unit": "piece" },
+            { "Name": "Feta", "Amount": 200, "Unit": "grams" },
+            { "Name": "Oliven", "Amount": 100, "Unit": "grams" },
+            { "Name": "Olivenöl", "Amount": 3, "Unit": "EL" },
+            { "Name": "Oregano", "Amount": 1, "Unit": "TL" }
+        ],
+        "PersonAmount": 2,
+        "TimeEffort": 15,
+        "Tags": "Vegetarian, Low Carb, Healthy",
+        "Instructions": "MockedInstruction",
+        "ImgSrc": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fimage.essen-und-trinken.de%2F11850352%2Ft%2FF_%2Fv8%2Fw1440%2Fr1%2F-%2Fgriechischer-salat-03a82e12aa3591e27fcb83ed25ca193c-griechischer-salat-jpg--18006-.jpg&f=1&nofb=1&ipt=34ca146d6e5b3a3aa6f33cfac1839520e4faa04af93e005735cb93f78fc4df35&ipo=images"
+    },
+]
