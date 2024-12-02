@@ -21,6 +21,7 @@ public class Recipe {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title;
+    @Lob
     private String description;
     @ManyToMany()
     private Set<Tag> tags;
@@ -28,7 +29,9 @@ public class Recipe {
     private Set<RecipeIngredient> ingredients;
     private int personAmount;
     private int timeEffort;
+    @Lob
     private String instructions;
+    @Lob
     private String imageSrc;
 
 }

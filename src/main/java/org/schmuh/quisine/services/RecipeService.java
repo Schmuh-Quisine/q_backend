@@ -13,6 +13,7 @@ import org.schmuh.quisine.repository.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -33,7 +34,7 @@ public class RecipeService {
 
 
     public RecipeDto getRecipeById(Long id) {
-       return this.mapToDto(Objects.requireNonNull(recipeRepository.findById(id).orElse(null)));
+        return this.mapToDto(Objects.requireNonNull(recipeRepository.findById(id).orElse(null)));
     }
 
     public void createRecipe(Recipe recipe) {
@@ -53,7 +54,7 @@ public class RecipeService {
     public RecipeDto createRecipe(RecipeDto recipeDto) {
         // Map Recipe
 
-        if (this.recipeRepository.findById((long)recipeDto.getId()).isPresent()) {
+        if (this.recipeRepository.findById((long) recipeDto.getId()).isPresent()) {
             return null;
         }
         Recipe recipe = new Recipe();
@@ -72,41 +73,49 @@ public class RecipeService {
         recipe.setInstructions(recipeDto.getInstructions());
         recipe.setImageSrc(recipeDto.getImgSrc());
 
+        Set<Tag> tags = new HashSet<>();
+        Set<RecipeIngredient> recipeIngredients = new HashSet<>();
         // Map Tags
-        Set<Tag> tags = recipeDto.getTags().stream()
-                .map(tagName -> tagRepository.findByName(tagName)
-                        .orElseGet(() -> {
-                            Tag tag = new Tag();
-                            tag.setName(tagName);
-                            return tagRepository.save(tag);
-                        }))
-                .collect(Collectors.toSet());
+        if (recipeDto.getTags() != null) {
+            tags = recipeDto.getTags().stream()
+                    .map(tagName -> tagRepository.findByName(tagName)
+                            .orElseGet(() -> {
+                                Tag tag = new Tag();
+                                tag.setName(tagName);
+                                return tagRepository.save(tag);
+                            }))
+                    .collect(Collectors.toSet());
+        }
         recipe.setTags(tags);
 
         // Map Ingredients
-        Set<RecipeIngredient> recipeIngredients = recipeDto.getIngredients().stream()
-                .map(ingredientDto -> {
-                    Ingredient ingredient = ingredientRepository.findByName(ingredientDto.getName())
-                            .orElseGet(() -> {
-                                Ingredient newIngredient = new Ingredient();
-                                newIngredient.setName(ingredientDto.getName());
-                                return ingredientRepository.save(newIngredient);
-                            });
+        if (recipeDto.getIngredients() != null) {
+            recipeIngredients = recipeDto.getIngredients().stream()
+                    .map(ingredientDto -> {
+                        Ingredient ingredient = ingredientRepository.findByName(ingredientDto.getName())
+                                .orElseGet(() -> {
+                                    Ingredient newIngredient = new Ingredient();
+                                    newIngredient.setName(ingredientDto.getName());
+                                    return ingredientRepository.save(newIngredient);
+                                });
 
-                    RecipeIngredient recipeIngredient = new RecipeIngredient();
-                    recipeIngredient.setIngredient(ingredient);
-                    recipeIngredient.setRecipe(recipe);
-                    recipeIngredient.setAmount(ingredientDto.getAmount());
-                    recipeIngredient.setUnit(ingredientDto.getUnit());
-                    return recipeIngredient;
-                }).collect(Collectors.toSet());
+                        RecipeIngredient recipeIngredient = new RecipeIngredient();
+                        recipeIngredient.setIngredient(ingredient);
+                        recipeIngredient.setRecipe(recipe);
+                        recipeIngredient.setAmount(ingredientDto.getAmount());
+                        recipeIngredient.setUnit(ingredientDto.getUnit());
+                        return recipeIngredient;
+                    }).collect(Collectors.toSet());
+
+        }
         recipe.setIngredients(recipeIngredients);
+
         return recipe;
     }
 
     public RecipeDto updateRecipeById(RecipeDto recipeDto) {
-        Recipe recipe = this.recipeRepository.findById((long)recipeDto.getId()).orElse(null);
-        if(recipe == null) {
+        Recipe recipe = this.recipeRepository.findById((long) recipeDto.getId()).orElse(null);
+        if (recipe == null) {
             return null;
         }
         recipe = this.saveRecipeMiddleware(recipe, recipeDto);
@@ -114,6 +123,7 @@ public class RecipeService {
         return this.mapToDto(recipe);
 
     }
+
     public RecipeDto mapToDto(Recipe recipe) {
         RecipeDto dto = new RecipeDto();
         dto.setId(recipe.getId());

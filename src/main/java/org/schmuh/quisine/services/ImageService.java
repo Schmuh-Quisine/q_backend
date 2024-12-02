@@ -12,10 +12,16 @@ import org.opencv.photo.Photo;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.io.File;
 
@@ -26,16 +32,20 @@ import java.util.Date;
 @Service
 @NoArgsConstructor
 public class ImageService {
+
+
+    @Value("${uploadDir}")
+    String uploadDir;
     @Value("${testImageFolderPath}")
     private String testFolder;
     private String folderName = "Folder2" + new SimpleDateFormat("HH_mm_ss").format(new Date());
     public String folderPath;
 
-    public Pair<BufferedImage, ArrayList<Rectangle>> GetImage (String imageName){
+    public Pair<BufferedImage, ArrayList<Rectangle>> GetImage (String filepath){
         nu.pattern.OpenCV.loadLocally();
         tempCreateImageFolder();
 
-        Mat startImage = Imgcodecs.imread(testFolder + imageName);
+        Mat startImage = Imgcodecs.imread(filepath);
         Imgproc.resize(startImage, startImage, new Size(2490, 3510), 2, 2, Imgproc.INTER_CUBIC);
 
         Mat preProcessedImage = imagePreprocessing(startImage.clone());
@@ -170,5 +180,30 @@ public class ImageService {
             rectangles.add(new Rectangle(rect.x, rect.y, rect.width, rect.height));
         }
         return rectangles;
+    }
+
+    public String saveImage(MultipartFile file){
+        String fileName = file.getOriginalFilename();
+
+        Path uploadPath = Paths.get(uploadDir);
+
+        if (!Files.exists(uploadPath)) {
+            try {
+                Files.createDirectories(uploadPath);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        try {
+            if (fileName != null) {
+                Files.copy(file.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+            }else{
+                return "";
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return uploadPath.resolve(fileName).toAbsolutePath().toString();
     }
 }

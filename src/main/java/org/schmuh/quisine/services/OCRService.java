@@ -3,6 +3,7 @@ package org.schmuh.quisine.services;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.schmuh.quisine.dto.RecipeDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -24,6 +25,8 @@ public class OCRService {
 
     @Autowired
     private ImageService imageService;
+    @Autowired
+    private RecipeService recipeService;
 
     private Tesseract tesseract;
 
@@ -36,8 +39,8 @@ public class OCRService {
         //tesseract.setTessVariable("tessedit_char_whitelist", "");
     }
 
-    public void GetTextFromPicture() throws TesseractException {
-        var file = this.imageService.GetImage("rezept4.jpg");
+    public RecipeDto GetTextFromPicture(String filepath) throws TesseractException {
+        var file = this.imageService.GetImage(filepath);
         var teststring = new String();
 
         for (Rectangle rect : file.getSecond()){
@@ -53,6 +56,43 @@ public class OCRService {
         var printwriter = new PrintWriter(this.imageService.folderPath + "/OCRText.txt");
         printwriter.println(teststring);
         printwriter.close();
+        }
+        catch (FileNotFoundException e){
+            e.printStackTrace();
+        }
+        //temp
+
+        System.out.println("-------------------Rezept anfang---------------------------");
+        System.out.println(teststring);
+        System.out.println("-------------------Rezept ende---------------------------");
+
+        // use separate method to build RecipeDto, call saveRecipe with RecipeDto Object and return the result
+
+        RecipeDto tmpRecipeDto = new RecipeDto();
+        tmpRecipeDto.setTitle("OCR Test Legga");
+        tmpRecipeDto.setDescription(teststring);
+        //...
+        return this.recipeService.createRecipe(tmpRecipeDto);
+
+
+    }
+    public void GetTextFromPicture() throws TesseractException {
+        var file = this.imageService.GetImage("rezept4.jpg");
+        var teststring = new String();
+
+        for (Rectangle rect : file.getSecond()){
+            teststring += tesseract.doOCR(file.getFirst(), rect);
+        }
+        //temp
+
+        System.out.println("-------------------Ganzes bild Rezept anfang---------------------------");
+        System.out.println(tesseract.doOCR(file.getFirst()));
+        System.out.println("-------------------Rezept ende---------------------------");
+
+        try{
+            var printwriter = new PrintWriter(this.imageService.folderPath + "/OCRText.txt");
+            printwriter.println(teststring);
+            printwriter.close();
         }
         catch (FileNotFoundException e){
             e.printStackTrace();

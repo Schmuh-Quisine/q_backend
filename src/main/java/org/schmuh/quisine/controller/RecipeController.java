@@ -1,11 +1,10 @@
 package org.schmuh.quisine.controller;
 
+import net.sourceforge.tess4j.TesseractException;
 import org.schmuh.quisine.dto.RecipeDto;
 import org.schmuh.quisine.entity.Recipe;
 import org.schmuh.quisine.entity.Tag;
-import org.schmuh.quisine.services.IngredientService;
-import org.schmuh.quisine.services.RecipeService;
-import org.schmuh.quisine.services.TagService;
+import org.schmuh.quisine.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -29,9 +28,11 @@ public class RecipeController {
 
     @Autowired
     RecipeService recipeService;
+    @Autowired
+    ImageService imageService;
+    @Autowired
+    OCRService ocrService;
 
-    @Value("${uploadDir}")
-    String uploadDir;
 
     @PostMapping("recipes")
     public ResponseEntity<RecipeDto> postRecipe(@RequestBody RecipeDto recipeDto) {
@@ -77,22 +78,16 @@ public class RecipeController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<String> handleFileUpload(@RequestParam("image") MultipartFile file) {
+    public ResponseEntity<RecipeDto> handleFileUpload(@RequestParam("image") MultipartFile file) {
         try {
             // Save the file to the server (example: save it to a folder)
-            String fileName = file.getOriginalFilename();
 
-            Path uploadPath = Paths.get(uploadDir);
-
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-
-            Files.copy(file.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
-
-            return ResponseEntity.ok("File uploaded successfully: " + fileName);
-        } catch (IOException e) {
-            return ResponseEntity.status(500).body("File upload failed: " + e.getMessage());
+            RecipeDto returnDto = new RecipeDto();
+            String filePath = this.imageService.saveImage(file);
+            returnDto = this.ocrService.GetTextFromPicture(filePath);
+            return ResponseEntity.ok().body(returnDto);
+        } catch (TesseractException e) {
+            return ResponseEntity.status(500).body(new RecipeDto());
         }
     }
 
