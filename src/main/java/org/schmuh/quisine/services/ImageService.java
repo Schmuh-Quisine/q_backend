@@ -38,12 +38,13 @@ public class ImageService {
     String uploadDir;
     @Value("${testImageFolderPath}")
     private String testFolder;
-    private String folderName = "Folder2" + new SimpleDateFormat("HH_mm_ss").format(new Date());
+    private String folderName = "Folder3" + new SimpleDateFormat("HH_mm_ss").format(new Date());
     public String folderPath;
+
+    private ArrayList<Pair<Mat, String>> imagesToSave = new ArrayList<>();
 
     public Pair<BufferedImage, ArrayList<Rectangle>> GetImage (String filepath){
         nu.pattern.OpenCV.loadLocally();
-        tempCreateImageFolder();
 
         Mat startImage = Imgcodecs.imread(filepath);
         Imgproc.resize(startImage, startImage, new Size(2490, 3510), 2, 2, Imgproc.INTER_CUBIC);
@@ -59,8 +60,8 @@ public class ImageService {
 
         Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2.5, 2));
         Imgproc.erode(preProcessedImage, preProcessedImage, kernel);
-        writeImage(Pair.of(preProcessedImage, "erodeImage.jpg"));
-
+        imagesToSave.add(Pair.of(preProcessedImage.clone(), "erodeImage.jpg"));
+        // writeImage(imagesToSave);
         return Pair.of(matToBufferdImageConverter(preProcessedImage), rectToRectangleConverter(rects));
     }
 
@@ -73,13 +74,13 @@ public class ImageService {
         clahe.apply(image, image);
 
         Core.normalize(image, image, 0, 255, Core.NORM_MINMAX);
-        writeImage(Pair.of(image, "normalizeImage.jpg"));
+        imagesToSave.add(Pair.of(image.clone(), "normalizeImage.jpg"));
 
         Photo.fastNlMeansDenoising(image, image, 20);
-        writeImage(Pair.of(image, "preProcessedImage.jpg"));
+        imagesToSave.add(Pair.of(image.clone(), "preProcessedImage.jpg"));
 
-        Imgproc.adaptiveThreshold(image, image, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY_INV, 21, 5); // c =2
-        writeImage(Pair.of(image, "ThresholdImage.jpg"));
+        Imgproc.adaptiveThreshold(image, image, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY_INV, 21, 2); // c =5
+        imagesToSave.add(Pair.of(image.clone(), "ThresholdImage.jpg"));
 
         return image;
     }
@@ -88,7 +89,7 @@ public class ImageService {
         Mat dilate = image.clone();
         var kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(25,3)); //if we want to read the numbers (e.g: "1." we need to adapt the width to 25, if not set to 10
         Imgproc.dilate(image, dilate, kernel, new Point(-1,-1), 2);
-        writeImage(Pair.of(dilate, "dilteRowImage.jpg"));
+        imagesToSave.add(Pair.of(dilate.clone(), "dilteRowImage.jpg"));
 
         ArrayList<MatOfPoint> contours = new ArrayList<>();
         Mat hierarchy = new Mat();
@@ -103,7 +104,7 @@ public class ImageService {
         Mat dilate = image.clone();
         var kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(6,3));
         Imgproc.dilate(image, dilate, kernel, new Point(-1,-1), 2);
-        writeImage(Pair.of(dilate, "dilteWordImage.jpg"));
+        imagesToSave.add(Pair.of(dilate.clone(), "dilteWordImage.jpg"));
 
         ArrayList<MatOfPoint> contours = new ArrayList<>();
         Mat hierarchy = new Mat();
@@ -123,7 +124,7 @@ public class ImageService {
             }
             Imgproc.drawContours(image, contours, contours.indexOf(contour), new Scalar(0, 0, 0), -2);
         }
-        writeImage(Pair.of(image, "filledContours.jpg"));
+        imagesToSave.add(Pair.of(image.clone(), "filledContours.jpg"));
     }
 
     //temp
@@ -135,7 +136,7 @@ public class ImageService {
             rects.add(rect);
             Imgproc.rectangle(rectangles, rect.tl(), rect.br(), new Scalar(0, 255, 0), 2); // temp
         }
-        writeImage(Pair.of(rectangles, "rectangles.jpg")); // temp
+        imagesToSave.add(Pair.of(rectangles.clone(), "rectangles.jpg")); // temp
         return rects;
     }
 
@@ -151,9 +152,12 @@ public class ImageService {
         });
     }
 
-    private void writeImage(Pair<Mat, String> image)
+    private void writeImage(ArrayList<Pair<Mat, String>> imagesToSave)
     {
-        Imgcodecs.imwrite(testFolder + folderName + "/" + image.getSecond(), image.getFirst());
+        tempCreateImageFolder();
+        for (Pair<Mat, String> image : imagesToSave){
+            Imgcodecs.imwrite(testFolder + folderName + "/" + image.getSecond(), image.getFirst());
+        }
     }
 
     private void tempCreateImageFolder(){

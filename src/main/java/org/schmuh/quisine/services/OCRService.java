@@ -1,8 +1,10 @@
 package org.schmuh.quisine.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.schmuh.quisine.dto.IngredientDto;
 import org.schmuh.quisine.dto.RecipeDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,8 +14,10 @@ import net.sourceforge.tess4j.TesseractException;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @Service
@@ -41,17 +45,13 @@ public class OCRService {
 
     public RecipeDto GetTextFromPicture(String filepath) throws TesseractException {
         var file = this.imageService.GetImage(filepath);
-        var teststring = new String();
+        var ocrText = new String();
 
         for (Rectangle rect : file.getSecond()){
-            teststring += tesseract.doOCR(file.getFirst(), rect);
+            ocrText += tesseract.doOCR(file.getFirst(), rect);
         }
-        //temp
 
-        System.out.println("-------------------Ganzes bild Rezept anfang---------------------------");
-        System.out.println(tesseract.doOCR(file.getFirst()));
-        System.out.println("-------------------Rezept ende---------------------------");
-
+        /*
         try{
         var printwriter = new PrintWriter(this.imageService.folderPath + "/OCRText.txt");
         printwriter.println(teststring);
@@ -60,48 +60,62 @@ public class OCRService {
         catch (FileNotFoundException e){
             e.printStackTrace();
         }
-        //temp
+        */
+
+        // Replace wrong character
+        ocrText = ocrText.replace("TI.", "Tl.");
+        ocrText = ocrText.replaceAll("[ \t]+", " ").trim();
 
         System.out.println("-------------------Rezept anfang---------------------------");
-        System.out.println(teststring);
+        System.out.println(ocrText);
         System.out.println("-------------------Rezept ende---------------------------");
 
-        // use separate method to build RecipeDto, call saveRecipe with RecipeDto Object and return the result
+        // Split ocrText to two Strings => ingredients and description
+        String ingredients = "";
+        String description = "";
+        Pattern IngredientPattern = Pattern.compile("(?<=Zutaten:)(.*?)(?=Zubereitung:)", Pattern.DOTALL);
+        Pattern DescriptionPattern = Pattern.compile("(?<=Zubereitung:)(.*)", Pattern.DOTALL);
+        Matcher matcher = IngredientPattern.matcher(ocrText);
+        if (matcher.find()){
+            ingredients = matcher.group(1).trim();
+        }
+        matcher = DescriptionPattern.matcher(ocrText);
+        if (matcher.find()){
+            description = matcher.group(1).trim();
+        }
+
+        // Get all Ingredients from ingredients string
+        ArrayList<IngredientDto> ingredientsList = GetIngredients(ingredients);
+
+        // Get Title
+        String[] tempSplit = ingredients.split("\n", 2);
+        String title = tempSplit[0];
 
         RecipeDto tmpRecipeDto = new RecipeDto();
-        tmpRecipeDto.setTitle("OCR Test Legga");
-        tmpRecipeDto.setDescription(teststring);
+        tmpRecipeDto.setTitle(title);
+        tmpRecipeDto.setDescription(description);
+        tmpRecipeDto.setIngredients(ingredientsList);
+
         //...
         return this.recipeService.createRecipe(tmpRecipeDto);
-
-
     }
-    public void GetTextFromPicture() throws TesseractException {
-        var file = this.imageService.GetImage("rezept4.jpg");
-        var teststring = new String();
 
-        for (Rectangle rect : file.getSecond()){
-            teststring += tesseract.doOCR(file.getFirst(), rect);
+    private ArrayList<IngredientDto> GetIngredients(String ocrString){
+        ArrayList<IngredientDto> ingredients = new ArrayList<>();
+
+        String[] lines = ocrString.split("\\r?\\n");
+        Pattern pattern = Pattern.compile("(\\d+)\\s*((?:\\S+\\s+)?Prise|ml|g|kg|mg|l|Tl\\.|El\\.)?\\s*([A-Za-zÄäÖöÜüß]+(?:\\s+[A-Za-zÄäÖöÜüß]+)*)"); //(\d+)\s+((?:\S+\s+)?Prise|ml|g|kg|mg|l|Tl\.|El\.)\s+(.*) // group 3 should be adapted => overengineered
+
+        for (String line : lines){
+            Matcher matcher = pattern.matcher(line);
+            while (matcher.find()){
+                IngredientDto ingredient = new IngredientDto();
+                ingredient.setAmount(matcher.group(1) != null ? Double.parseDouble(matcher.group(1).trim()) : 0);
+                ingredient.setUnit(matcher.group(2) != null ? matcher.group(2).trim() : "");
+                ingredient.setName(matcher.group(3)!= null ? matcher.group(3).trim() : "");
+                ingredients.add(ingredient);
+            }
         }
-        //temp
-
-        System.out.println("-------------------Ganzes bild Rezept anfang---------------------------");
-        System.out.println(tesseract.doOCR(file.getFirst()));
-        System.out.println("-------------------Rezept ende---------------------------");
-
-        try{
-            var printwriter = new PrintWriter(this.imageService.folderPath + "/OCRText.txt");
-            printwriter.println(teststring);
-            printwriter.close();
-        }
-        catch (FileNotFoundException e){
-            e.printStackTrace();
-        }
-        //temp
-
-        System.out.println("-------------------Rezept anfang---------------------------");
-        System.out.println(teststring);
-        System.out.println("-------------------Rezept ende---------------------------");
-
+        return ingredients;
     }
 }

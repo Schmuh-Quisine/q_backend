@@ -19,7 +19,7 @@ public class OCRController {
     public ResponseEntity<String> ocrTest() {
 
         try{
-        this.ocrService.GetTextFromPicture();
+        this.ocrService.GetTextFromPicture("C:/Uni/GruppenProjekt/q_backend/src/main/resources/images/test/rezept4.jpg");
         } catch (TesseractException e) {
             throw new RuntimeException(e);
         }
