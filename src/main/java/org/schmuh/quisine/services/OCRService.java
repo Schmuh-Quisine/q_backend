@@ -88,12 +88,12 @@ public class OCRService {
         ArrayList<IngredientDto> ingredientsList = GetIngredients(ingredients);
 
         // Get Title
-        String[] tempSplit = ingredients.split("\n", 2);
+        String[] tempSplit = ocrText.split("\n", 2);
         String title = tempSplit[0];
 
         RecipeDto tmpRecipeDto = new RecipeDto();
         tmpRecipeDto.setTitle(title);
-        tmpRecipeDto.setDescription(description);
+        tmpRecipeDto.setInstructions(description);
         tmpRecipeDto.setIngredients(ingredientsList);
 
         //...

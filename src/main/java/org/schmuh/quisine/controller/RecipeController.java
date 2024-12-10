@@ -80,7 +80,6 @@ public class RecipeController {
     @PostMapping("/upload")
     public ResponseEntity<RecipeDto> handleFileUpload(@RequestParam("image") MultipartFile file) {
         try {
-            // Save the file to the server (example: save it to a folder)
 
             RecipeDto returnDto = new RecipeDto();
             String filePath = this.imageService.saveImage(file);
