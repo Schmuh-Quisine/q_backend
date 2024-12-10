@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"Alle Packages","u":"allpackages-index.html"},{"l":"org.schmuh.quisine"},{"l":"org.schmuh.quisine.configuration"},{"l":"org.schmuh.quisine.controller"},{"l":"org.schmuh.quisine.dto"},{"l":"org.schmuh.quisine.entity"},{"l":"org.schmuh.quisine.repository"},{"l":"org.schmuh.quisine.services"}];updateSearchResults();

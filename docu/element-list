@@ -1,0 +1,7 @@
+org.schmuh.quisine
+org.schmuh.quisine.configuration
+org.schmuh.quisine.controller
+org.schmuh.quisine.dto
+org.schmuh.quisine.entity
+org.schmuh.quisine.repository
+org.schmuh.quisine.services
