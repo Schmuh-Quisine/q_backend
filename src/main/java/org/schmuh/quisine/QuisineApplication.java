@@ -4,6 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.stereotype.Component;
 
 import java.lang.module.Configuration;
 
@@ -15,7 +16,8 @@ import java.lang.module.Configuration;
  * {@link Configuration}, {@link EnableAutoConfiguration}, and {@link ComponentScan}, allowing Spring to
  * automatically configure and discover components within the application.
  */
-@SpringBootApplication
+
+@SpringBootApplication(scanBasePackages = "org.schmuh.quisine")
 public class QuisineApplication {
 
 	public static void main(String[] args) {
