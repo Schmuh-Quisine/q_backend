@@ -126,8 +126,17 @@ public class RecipeService {
 
         Set<Tag> tags = new HashSet<>();
         Set<RecipeIngredient> recipeIngredients = new HashSet<>();
+        // clear old lists
+        if (recipe.getTags() != null) {
+            recipe.getTags().clear();
+        }
+        if (recipe.getIngredients() != null) {
+            recipe.getIngredients().clear();
+        }
+
+
         // Map Tags
-        if (recipeDto.getTags() != null) {
+        if (recipeDto.getTags() != null && !recipeDto.getTags().isEmpty()) {
             tags = recipeDto.getTags().stream()
                     .map(tagName -> tagRepository.findByName(tagName)
                             .orElseGet(() -> {
@@ -136,11 +145,15 @@ public class RecipeService {
                                 return tagRepository.save(tag);
                             }))
                     .collect(Collectors.toSet());
+
         }
-        recipe.setTags(tags);
+        if(!tags.isEmpty()) {
+          recipe.setTags(tags);
+        }
+
 
         // Map Ingredients
-        if (recipeDto.getIngredients() != null) {
+        if (recipeDto.getIngredients() != null && !recipeDto.getIngredients().isEmpty()) {
             recipeIngredients = recipeDto.getIngredients().stream()
                     .map(ingredientDto -> {
                         Ingredient ingredient = ingredientRepository.findByName(ingredientDto.getName())
@@ -157,9 +170,19 @@ public class RecipeService {
                         recipeIngredient.setUnit(ingredientDto.getUnit());
                         return recipeIngredient;
                     }).collect(Collectors.toSet());
-        }
-        recipe.setIngredients(recipeIngredients);
 
+
+        }
+
+        if(!recipeIngredients.isEmpty()) {
+            recipe.setIngredients(recipeIngredients);
+            recipeIngredients.forEach(recipeIngredient -> {
+                recipeIngredient.setRecipe(recipe);
+            });
+
+        }
+
+        this.recipeRepository.save(recipe);
         return recipe;
     }
 
