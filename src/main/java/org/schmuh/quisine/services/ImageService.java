@@ -32,8 +32,6 @@ import java.util.Date;
 @Service
 @NoArgsConstructor
 public class ImageService {
-
-
     @Value("${uploadDir}")
     String uploadDir;
     @Value("${testImageFolderPath}")
@@ -43,6 +41,13 @@ public class ImageService {
 
     private ArrayList<Pair<Mat, String>> imagesToSave = new ArrayList<>();
 
+    /**
+     * Reads an image from the specified file path, applies pre-processing techniques,
+     * detects contours in the image, and returns the processed image along with the detected rectangles.
+     *
+     * @param filepath The path to the image file.
+     * @return A {@link Pair} containing the pre-processed image as a {@link BufferedImage} and a list of {@link Rectangle} objects.
+     */
     public Pair<BufferedImage, ArrayList<Rectangle>> GetImage (String filepath){
         nu.pattern.OpenCV.loadLocally();
 
@@ -55,6 +60,7 @@ public class ImageService {
         filterContours(contours, preProcessedImage);
         contours = getRowContours(preProcessedImage);
         //contours = getWordContours(preProcessedImage);
+
         var rects = GetRectangles(startImage, contours);
         SortRectangles(rects);
 
@@ -65,6 +71,13 @@ public class ImageService {
         return Pair.of(matToBufferdImageConverter(preProcessedImage), rectToRectangleConverter(rects));
     }
 
+    /**
+     * Pre-processes the provided image by applying color conversion, CLAHE (Contrast Limited Adaptive Histogram Equalization),
+     * denoising, and adaptive thresholding.
+     *
+     * @param image The image to be pre-processed.
+     * @return The pre-processed image as a {@link Mat} object.
+     */
     private Mat imagePreprocessing(Mat image){
         Imgproc.cvtColor(image, image, Imgproc.COLOR_BGR2GRAY);
 
@@ -85,6 +98,12 @@ public class ImageService {
         return image;
     }
 
+    /**
+     * Finds and returns the row-based contours in the provided image.
+     *
+     * @param image The image for which row-based contours need to be detected.
+     * @return A list of {@link MatOfPoint} representing the contours.
+     */
     private ArrayList<MatOfPoint> getRowContours(Mat image){
         Mat dilate = image.clone();
         var kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(25,3)); //if we want to read the numbers (e.g: "1." we need to adapt the width to 25, if not set to 10
@@ -100,6 +119,12 @@ public class ImageService {
         return contours;
     }
 
+    /**
+     * Finds and returns the word-based contours in the provided image.
+     *
+     * @param image The image for which word-based contours need to be detected.
+     * @return A list of {@link MatOfPoint} representing the contours.
+     */
     private ArrayList<MatOfPoint> getWordContours(Mat image){
         Mat dilate = image.clone();
         var kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(6,3));
@@ -115,6 +140,12 @@ public class ImageService {
         return contours;
     }
 
+    /**
+     * Filters out unwanted contours from the provided list of contours based on size and aspect ratio.
+     *
+     * @param contours The list of contours to be filtered.
+     * @param image The image on which contours are drawn after filtering.
+     */
     private void filterContours(ArrayList<MatOfPoint> contours, Mat image){
         for (MatOfPoint contour : contours) {
             Rect rect = Imgproc.boundingRect(contour);
@@ -127,19 +158,30 @@ public class ImageService {
         imagesToSave.add(Pair.of(image.clone(), "filledContours.jpg"));
     }
 
-    //temp
+    /**
+     * Converts a list of contours into rectangles and draws them on the image.
+     *
+     * @param image The image on which rectangles are drawn.
+     * @param contours The list of contours to be converted into rectangles.
+     * @return A list of {@link Rect} representing the bounding rectangles of the contours.
+     */
     private ArrayList<Rect> GetRectangles(Mat image, ArrayList<MatOfPoint> contours){
         ArrayList<Rect> rects = new ArrayList<>();
         Mat rectangles = image.clone();
         for (MatOfPoint contour : contours) {
             Rect rect = Imgproc.boundingRect(contour);
             rects.add(rect);
-            Imgproc.rectangle(rectangles, rect.tl(), rect.br(), new Scalar(0, 255, 0), 2); // temp
+            Imgproc.rectangle(rectangles, rect.tl(), rect.br(), new Scalar(0, 255, 0), 2);
         }
-        imagesToSave.add(Pair.of(rectangles.clone(), "rectangles.jpg")); // temp
+        imagesToSave.add(Pair.of(rectangles.clone(), "rectangles.jpg"));
         return rects;
     }
 
+    /**
+     * Sorts a list of rectangles by their vertical position (y-coordinate), and within each row, sorts by horizontal position (x-coordinate).
+     *
+     * @param rects The list of rectangles to be sorted.
+     */
     private void SortRectangles(ArrayList<Rect> rects){
         rects.sort(new Comparator<Rect>() {
             @Override
@@ -152,25 +194,45 @@ public class ImageService {
         });
     }
 
+    /**
+     * Writes the processed images to disk, creating a folder in the specified test folder.
+     *
+     * @param imagesToSave A list of {@link Pair} objects containing the image matrix and the corresponding file name.
+     */
     private void writeImage(ArrayList<Pair<Mat, String>> imagesToSave)
     {
-        tempCreateImageFolder();
+        createImageFolder();
         for (Pair<Mat, String> image : imagesToSave){
             Imgcodecs.imwrite(testFolder + folderName + "/" + image.getSecond(), image.getFirst());
         }
     }
 
-    private void tempCreateImageFolder(){
+    /**
+     * Creates a new folder for saving images.
+     */
+    private void createImageFolder(){
         folderPath = testFolder + folderName;
         new File(folderPath).mkdir();
     }
 
+    /**
+     * Converts an OpenCV {@link Mat} object to a Java {@link BufferedImage}.
+     *
+     * @param mat The matrix to be converted.
+     * @return The converted {@link BufferedImage}.
+     */
     private BufferedImage matToBufferdImageConverter(Mat mat){
         BufferedImage image = new BufferedImage(mat.cols(), mat.rows(), BufferedImage.TYPE_BYTE_GRAY);
         mat.get(0,0,((DataBufferByte) image.getRaster().getDataBuffer()).getData());
         return image;
     }
 
+    /**
+     * Converts a Java {@link BufferedImage} to an OpenCV {@link Mat}.
+     *
+     * @param image The {@link BufferedImage} to be converted.
+     * @return The converted {@link Mat}.
+     */
     private Mat bufferedImageToMatConverter(BufferedImage image){
         Mat mat = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC3);
         byte[] data = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
@@ -178,6 +240,12 @@ public class ImageService {
         return mat;
     }
 
+    /**
+     * Converts a list of OpenCV {@link Rect} objects to Java {@link Rectangle} objects.
+     *
+     * @param rects The list of {@link Rect} objects.
+     * @return A list of {@link Rectangle} objects.
+     */
     private ArrayList<Rectangle> rectToRectangleConverter(ArrayList<Rect> rects){
         ArrayList<Rectangle> rectangles = new ArrayList<>();
         for (Rect rect : rects) {
@@ -186,6 +254,12 @@ public class ImageService {
         return rectangles;
     }
 
+    /**
+     * Saves an uploaded image file to the specified upload directory.
+     *
+     * @param file The {@link MultipartFile} containing the image file to be saved.
+     * @return The absolute path of the saved image file.
+     */
     public String saveImage(MultipartFile file){
         String fileName = file.getOriginalFilename();
 
