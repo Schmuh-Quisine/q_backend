@@ -8,15 +8,13 @@ import org.schmuh.quisine.entity.Recipe;
 import org.schmuh.quisine.entity.RecipeIngredient;
 import org.schmuh.quisine.entity.Tag;
 import org.schmuh.quisine.repository.IngredientRepository;
+import org.schmuh.quisine.repository.RecipeIngredientRepository;
 import org.schmuh.quisine.repository.RecipeRepository;
 import org.schmuh.quisine.repository.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 /**
  * Service class for managing {@link Recipe} entities and their related operations.
@@ -34,6 +32,9 @@ public class RecipeService {
 
     @Autowired
     private IngredientRepository ingredientRepository;
+
+    @Autowired
+    private RecipeIngredientRepository recipeIngredientRepository;
 
     @Autowired
     private TagRepository tagRepository;
@@ -99,7 +100,7 @@ public class RecipeService {
             return null;
         }
         Recipe recipe = new Recipe();
-        recipe = this.saveRecipeMiddleware(recipe, recipeDto);
+        recipe = this.saveRecipeMiddleware(recipe, recipeDto, false);
 
         // Save Recipe
         Recipe tmpRecipe = this.recipeRepository.save(recipe);
@@ -116,7 +117,7 @@ public class RecipeService {
      * @param recipeDto The {@link RecipeDto} containing the recipe data.
      * @return The populated {@link Recipe} entity.
      */
-    public Recipe saveRecipeMiddleware(Recipe recipe, RecipeDto recipeDto) {
+    public Recipe saveRecipeMiddleware(Recipe recipe, RecipeDto recipeDto, boolean update) {
         recipe.setTitle(recipeDto.getTitle());
         recipe.setDescription(recipeDto.getDescription());
         recipe.setPersonAmount(recipeDto.getPersonAmount());
@@ -137,8 +138,8 @@ public class RecipeService {
                             }))
                     .collect(Collectors.toSet());
         }
-        recipe.setTags(tags);
 
+        recipe.setTags(tags);
         // Map Ingredients
         if (recipeDto.getIngredients() != null) {
             recipeIngredients = recipeDto.getIngredients().stream()
@@ -158,7 +159,31 @@ public class RecipeService {
                         return recipeIngredient;
                     }).collect(Collectors.toSet());
         }
-        recipe.setIngredients(recipeIngredients);
+        if(!update){
+            recipe.setIngredients(recipeIngredients);
+            recipe.setTags(tags);
+        }else{
+
+            // Ingredient Section
+            var oldIngredients = recipe.getIngredients();
+            if (oldIngredients != null) {
+                // Create a temporary list to hold items to remove
+                var ingredientsToRemove = new ArrayList<>(oldIngredients);
+
+                // Remove all ingredients from the original set
+                ingredientsToRemove.forEach(recipeIngredient -> {
+                    if (recipeIngredient != null) {
+                        oldIngredients.remove(recipeIngredient);
+                        recipeIngredient.setRecipe(null);
+                    }
+                });
+            }
+            // Add new ingredients after clearing the old ones
+            if (recipe.getIngredients() != null) {
+                recipe.getIngredients().addAll(recipeIngredients);
+            }
+        }
+
 
         return recipe;
     }
@@ -177,8 +202,8 @@ public class RecipeService {
         if (recipe == null) {
             return null;
         }
-        recipe = this.saveRecipeMiddleware(recipe, recipeDto);
-
+        recipe = this.saveRecipeMiddleware(recipe, recipeDto, true);
+        this.recipeRepository.save(recipe);
         return this.mapToDto(recipe);
     }
 

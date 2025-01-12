@@ -1,6 +1,7 @@
 package org.schmuh.quisine.repository;
 
 import org.schmuh.quisine.entity.Ingredient;
+import org.schmuh.quisine.entity.RecipeIngredient;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -19,6 +20,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *         <code>findAll()</code>, <code>deleteById()</code>, and more for managing {@link RecipeIngredient} entities.</li>
  * </ul>
  */
-public interface RecipeIngredientRepository extends JpaRepository<Ingredient, Long> {
-
+public interface RecipeIngredientRepository extends JpaRepository<RecipeIngredient, Long> {
+    void removeAllById(Long id);
 }

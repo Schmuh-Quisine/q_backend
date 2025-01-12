@@ -8,10 +8,10 @@ services:
       - 'POSTGRES_USER=admin'
     ports:
       - "5432:5432"
-  schmuh_quisine_backend:
-    image: ghcr.io/schmuh-quisine/schmuh_quisine_backend:latest # Replace with your app's image name
-    container_name: schmuh_quisine_backend
-    ports:
-      - "8080:8080" # Map container's port 8080 to host's port 8080
-    depends_on:
-      - postgres
+  #schmuh_quisine_backend:
+  #  image: ghcr.io/schmuh-quisine/schmuh_quisine_backend:latest # Replace with your app's image name
+  #  container_name: schmuh_quisine_backend
+  #  ports:
+  #    - "8080:8080" # Map container's port 8080 to host's port 8080
+  #  depends_on:
+  #    - postgres
